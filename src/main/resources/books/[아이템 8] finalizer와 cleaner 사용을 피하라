@@ -1,0 +1,30 @@
+finalizer
+Object에 속한 메서드
+해당 메서드를 재정의하면 다음과 같이 수명이 연장된다.
+종료화 가능한 객체는 큐로 이동한다.
+애플리케이션 쓰레드 재시작 후, 별도의 종료화 쓰레드가 큐를 비우고 각 객체마다 finalize() 메서드를 실행한다.
+finalize()가 종료되면 객체는 다음 사이클에 진짜 수집될 준비를 마친다.
+GC가 수행될 때, 쓰레드가 해당 객체를 소멸시킬 때 해당 메서드를 수행한다.
+그런데 GC는 finalizer가 호출되는 것을 보장하지 않는다.
+따라서 실행되지 않거나 한참 뒤늦게 실행될 수 있다.
+또한 멋대로 실행될 수도 있다.
+죽은 클래스를 부활시킬 수 있다.
+GC 대상이 된 객체를 finalize() 메서드를 통해 활성 참조를 다시 설정할 수도 있다.
+성능 문제가 있다. (7 ~ 11배 느려진다)
+https://www.hboehm.info/misc_slides/java_finalizers.pdf
+현재는 권장하지 않는다.
+https://openjdk.org/jeps/421
+
+종료를 비활성화하는 명령줄 옵션을 추가하여 GC에서 종료자가 실행되도록 예약하지 않도록 합니다.
+표준 Java API에서 모든 종료자 및 종료 관련 메소드를 더 이상 사용하지 않습니다.
+정리
+finalizer와 cleaner는 언제 수행될지 예측할 수 없다.
+즉시 수행된다는 보장이 없고, 실행되지 않을 수도 있다.
+finalizer 쓰레드가 다른 쓰레드보다 우선순위가 낮을 때 객체 소멸이 진행되지 않아서 프로그램이 죽어버릴 수 있다.
+cleaner는 자신을 수행할 쓰레드를 제어할 수 있지만, 여전히 GC에게 제어되기 때문에 즉각 수행되리라는 보장이 없다.
+https://stackoverflow.com/questions/26642153/finalize-called-on-strongly-reachable-objects-in-java-8/26645534#26645534
+finalizer 동작 중에 예외가 발생하면 정리 작업이 처리되지 않을 수도 있다.
+finalizer와 cleaner는 심각한 성능 문제도 동반한다.
+finalizer를 사용한 클래스는 finalizer 공격에 노출되어 심각한 보안 문제를 일으킬 수도 있다.
+finalizer 공격
+https://self-learning-java-tutorial.blogspot.com/2020/03/finalizer-attack-in-java.html

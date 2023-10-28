@@ -1,0 +1,45 @@
+private 생성자 + public static final 필드
+싱글턴으로 만들면 이를 사용하는 클라이언트를 테스트하기 어려워진다.
+인터페이스를 이용하면 해결할 수 있다.
+리플렉션으로 private 생성자를 호출할 수 있다.
+이러면 해당 객체가 하나임을 보장할 수 없다.
+따라서 생성자가 두 번째 호출되는 경우 예외를 던지게 하자.
+역직렬화할 때 새로운 인스턴스가 만들어진다.
+이를 방지하기 위해 readResolve() 메서드를 추가해야한다.
+private 생성자 + 정적 팩토리 메서드
+API를 바꾸지 않고도 싱글턴이 아니게 변경할 수 있다.
+
+정적 팩토리를 제네릭 싱글턴 팩토리로 만들 수 있다.
+
+package effectivejava.chapter5.item30;
+
+import java.util.function.UnaryOperator;
+
+// Generic singleton factory pattern (Page 136-7)
+public class GenericSingletonFactory {
+    // Generic singleton factory pattern
+    private static UnaryOperator<Object> IDENTITY_FN = (t) -> t;
+
+    @SuppressWarnings("unchecked")
+    public static <T> UnaryOperator<T> identityFunction() {
+        return (UnaryOperator<T>) IDENTITY_FN;
+    }
+
+    // Sample program to exercise generic singleton
+    public static void main(String[] args) {
+        String[] strings = { "jute", "hemp", "nylon" };
+        UnaryOperator<String> sameString = identityFunction();
+        for (String s : strings)
+            System.out.println(sameString.apply(s));
+
+        Number[] numbers = { 1, 2.0, 3L };
+        UnaryOperator<Number> sameNumber = identityFunction();
+        for (Number n : numbers)
+            System.out.println(sameNumber.apply(n));
+    }
+}
+정적 팩토리의 메서드 참조를 Supplier로 사용할 수 있다.
+
+Supplier는 왜 쓸까? → Lazy Evaluation
+Enum
+Enum은 new가 존재하지 않는다.

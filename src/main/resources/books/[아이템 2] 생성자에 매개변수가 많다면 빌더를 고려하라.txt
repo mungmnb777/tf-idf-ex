@@ -1,0 +1,63 @@
+점층적 생성자 패턴
+시그니처가 여러 개 생길 수 있는 경우, 필수 매개변수만 받는 생성자, 필수 매개변수와 선택 매개변수 1개, 2개, 3개… 등등 형태로 늘려가는 방식이다..
+해당 패턴의 경우 매개변수 개수가 많아지면 클라이언트 코드를 작성하거나 읽기가 어렵다.
+자바빈즈 패턴
+매개변수가 없는 생성자로 객체를 만든 후, setter 메서드를 통해 매개변수의 값을 설정하는 방법이다.
+완전히 생성되기 전에는 일관성이 무너진 상태에 놓인다.
+세팅이 완료되기 전에 객체가 사용될 수도 있다.
+불변 객체로 만들기 어렵다.
+프리징
+https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+임의의 객체를 불변 객체로 만들어준다.
+빌더 패턴
+점층적 생성자 패턴의 안전성과 자바빈즈 패턴의 가독성을 겸비한 패턴이다.
+계층형으로 설계된 클래스와 함께 쓰기 좋다.
+추상 클래스와 구체 클래스로 나뉜 클래스에서 Builder를 재정의하여 사용할 수 있다.
+
+이 경우 공통 필드는 추상 클래스에서 관리하고, 차이가 나는 부분만 구체 클래스에서 관리함으로써 필드를 관리하기 용이해진다.
+
+self를 더해 하위 클래스에서는 형변환하지 않고도 메서드 연쇄를 지원할 수 있다.
+
+package effectivejava.chapter2.item2.hierarchicalbuilder;
+import java.util.*;
+
+// Builder pattern for class hierarchies (Page 14)
+
+// Note that the underlying "simulated self-type" idiom  allows for arbitrary fluid hierarchies, not just builders
+
+public abstract class Pizza {
+    public enum Topping { HAM, MUSHROOM, ONION, PEPPER, SAUSAGE }
+    final Set<Topping> toppings;
+
+    abstract static class Builder<T extends Builder<T>> {
+        EnumSet<Topping> toppings = EnumSet.noneOf(Topping.class);
+        public T addTopping(Topping topping) {
+            toppings.add(Objects.requireNonNull(topping));
+            return self();
+        }
+
+        abstract Pizza build();
+
+        // Subclasses must override this method to return "this"
+        protected abstract T self();
+    }
+
+    Pizza(Builder<?> builder) {
+        toppings = builder.toppings.clone(); // See Item 50
+    }
+}
+→ self()를 추상 메서드로 등록한 이유는 빌더 패턴을 사용하는 클라이언트 코드에서 편리하게 쓰기 위해서다.
+
+public Builder<T> addTopping(Topping topping) {
+    toppings.add(Objects.requireNonNull(topping));
+    return this;
+}
+→ 만약 this를 리턴한다면 반환값이 Builder<T>가 된다.
+
+→ 이 경우 NyPizza.Builder를 사용해도 build() 메서드 사용 시 Pizza 타입의 객체가 반환된다.
+
+→ 따라서 NyPizza로 다운캐스팅을 해주어야 한다.
+
+가변인수(varargs) 매개변수를 여러 개 사용할 수 있다.
+
+빌더 클래스의 각각의 메서드마다 가변 인수를 하나씩 가질 수 있다는 것을 표현하는 듯
